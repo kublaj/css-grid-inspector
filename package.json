@@ -1,0 +1,25 @@
+{
+  "title": "CSS Grid Visualizer",
+  "name": "gridviz",
+  "version": "0.0.0",
+  "description": "Visualize grid lines defined by the CSS Grid API",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm-run-all --parallel browser watch",
+    "browser": "jpm run --no-copy -b nightly --prefs prefs.json --profile ./testprofile ",
+    "watch": "onchange index.js -- npm run post",
+    "post": "echo 'updating due to {{changed}}' && jpm post --post-url http://localhost:8888/ && echo 'done update'"
+  },
+  "author": "Potch <potch@mozilla.com>",
+  "engines": {
+    "firefox": ">=38.0a1"
+  },
+  "license": "MIT",
+  "keywords": [
+    "jetpack"
+  ],
+  "devDependencies": {
+    "jpm": "^1.0.7",
+    "npm-run-all": "^1.7.0"
+  }
+}
