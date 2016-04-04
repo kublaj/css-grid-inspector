@@ -29,12 +29,14 @@ tabs.on('activate', function () {
   });
 });
 
-tabs.on('close', function (tab) {
+function reset(tab) {
   if (workers[tab.id]) {
     detach(tab);
   }
-  toggleState[tab.id] = false;
-});
+}
+
+tabs.on('close', reset);
+tabs.on('ready', reset);
 
 function detach(tab) {
   if (workers[tab.id]) {

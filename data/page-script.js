@@ -94,10 +94,12 @@
     ctx.lineWidth = dpr * 2;
 
     function vert(x) {
+      ctx.lineDashOffset = (viewTop * dpr) % 20;
       line(x - viewLeft, 0, x - viewLeft, overlayEl.height);
     }
 
     function horiz(y) {
+      ctx.lineDashOffset = (viewLeft * dpr) % 20;
       line(0, y - viewTop, overlayEl.width, y - viewTop);
     }
 
@@ -124,7 +126,7 @@
       }
 
       function parseMulti(s) {
-        return s.split(/\s+/);
+        return s.split(/\s+/).filter(p => !isNaN(parseFloat(p, 10)));
       }
 
       function rect(x, y, width, height) {
@@ -197,8 +199,12 @@
       detectElements();
       measureAndDraw();
     } else {
-      overlayEl.style.display = 'none'
+      overlayEl.style.display = 'none';
     }
+  });
+
+  self.port.on('detach', function () {
+    overlayEl.parentNode.removeChild(overlayEl);
   });
 
   window.addEventListener('resize', redraw);
