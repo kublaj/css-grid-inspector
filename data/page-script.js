@@ -137,6 +137,9 @@
 
       elStyle = window.getComputedStyle(el);
 
+      top = top + (parseFloat(getStyle('padding-top')) || 0);
+      left = left + (parseFloat(getStyle('padding-left')) || 0);
+
       var cols = parseMulti(getStyle('grid-template-columns'));
       var colGaps = parseMulti(getStyle('grid-column-gap'));
       var rows = parseMulti(getStyle('grid-template-rows'));
