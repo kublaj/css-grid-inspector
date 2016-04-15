@@ -10,7 +10,9 @@
         } else {
           var found = false;
           Array.from(rule.style).forEach(function (dec) {
-            if (dec === 'display' && rule.style[dec] === 'grid') {
+            if (dec === 'display' &&
+                (rule.style[dec] === 'grid' ||
+                 rule.style[dec] === 'inline-grid')) {
               found = true;
             }
           });
