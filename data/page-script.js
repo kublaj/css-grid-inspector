@@ -35,24 +35,6 @@
 
   var selectors = collectSelectors();
 
-  // Recursively determine offsetLeft.
-  function getLeft(el) {
-    if (el.offsetParent) {
-      return getLeft(el.offsetParent) + el.offsetLeft;
-    } else {
-      return el.offsetLeft;
-    }
-  }
-
-  // Recursively determine offsetTop.
-  function getTop(el) {
-    if (el.offsetParent) {
-      return getTop(el.offsetParent) + el.offsetTop;
-    } else {
-      return el.offsetTop;
-    }
-  }
-
   var dpr = window.devicePixelRatio;
 
   var overlayEl = document.createElement('canvas');
@@ -72,14 +54,12 @@
   document.body.appendChild(overlayEl);
   var ctx = overlayEl.getContext('2d');
 
-  var els;
+  var elsBySelector = {};
 
   function detectElements() {
-    els = selectors.map(sel => document.querySelectorAll(sel));
-    els = els.reduce(
-      (old, current) => old.concat(Array.from(current)),
-      []
-    );
+    selectors.forEach(sel => {
+      elsBySelector[sel] = Array.from(document.querySelectorAll(sel));
+    });
   }
 
   function measureAndDraw() {
@@ -93,16 +73,16 @@
     overlayEl.style.left = viewLeft + 'px';
 
     ctx.clearRect(0,0,overlayEl.width * dpr, overlayEl.height * dpr);
-    ctx.lineWidth = dpr * 2;
+    ctx.lineWidth = dpr;
 
     function vert(x) {
       ctx.lineDashOffset = (viewTop * dpr) % 20;
-      line(x - viewLeft, 0, x - viewLeft, overlayEl.height);
+      line(x, 0, x, overlayEl.height);
     }
 
     function horiz(y) {
       ctx.lineDashOffset = (viewLeft * dpr) % 20;
-      line(0, y - viewTop, overlayEl.width, y - viewTop);
+      line(0, y, overlayEl.width, y);
     }
 
     function line(x0, y0, x1, y1) {
@@ -112,73 +92,92 @@
       ctx.stroke();
     }
 
+    function rect(x, y, width, height) {
+      ctx.fillRect(x * dpr, y * dpr, width * dpr, height * dpr);
+    }
 
-    els.forEach(function (el, i) {
-      ctx.setLineDash([15, 5]);
+    function text(s, x, y) {
+      x *= dpr;
+      y *= dpr;
+      ctx.save();
+      ctx.textBaseline = 'bottom';
+      var em = 12 * dpr;
+      ctx.font = em + 'px sans-serif';
+      var width = 2 * em + ctx.measureText(s).width;
+      var height = em * 2;
+      ctx.fillRect(x, y - height, width, height);
+      ctx.strokeRect(x, y - height, width, height);
+      ctx.fillStyle = '#000';
+      ctx.fillText(s, x + em, y - em / 2);
+      ctx.restore();
+    }
 
-      ctx.strokeStyle = 'hsl(' + ((i * 219) % 360) + ', 100%, 50%)';
+    var num = 0;
+    selectors.forEach(function (selector) {
+      var els = elsBySelector[selector];
+      els.forEach(function (el) {
+        ctx.setLineDash([12, 5]);
 
-      var top = getTop(el);
-      var left = getLeft(el);
+        ctx.strokeStyle = 'hsla(' + ((num * 219) % 360) + ', 100%, 55%, .8)';
 
-      var elStyle;
+        var innerQuad = el.getBoxQuads({
+          box:"content"
+        })[0];
 
-      function getStyle(prop) {
-        return elStyle.getPropertyValue(prop);
-      }
+        var top = innerQuad.p1.y;
+        var left = innerQuad.p1.x;
 
-      function parseMulti(s) {
-        return s.split(/\s+/).filter(p => !isNaN(parseFloat(p, 10)));
-      }
+        var elStyle;
 
-      function rect(x, y, width, height) {
-        ctx.fillRect(x * dpr, y * dpr, width * dpr, height * dpr);
-      }
+        function getStyle(prop) {
+          return elStyle.getPropertyValue(prop);
+        }
 
-      elStyle = window.getComputedStyle(el);
+        function parseMulti(s) {
+          return s.split(/\s+/).filter(p => !isNaN(parseFloat(p, 10)));
+        }
 
-      top = top + (parseFloat(getStyle('padding-top')) || 0);
-      left = left + (parseFloat(getStyle('padding-left')) || 0);
+        elStyle = window.getComputedStyle(el);
 
-      var cols = parseMulti(getStyle('grid-template-columns'));
-      var colGaps = parseMulti(getStyle('grid-column-gap'));
-      var rows = parseMulti(getStyle('grid-template-rows'));
-      var rowGaps = parseMulti(getStyle('grid-row-gap'));
+        var cols = parseMulti(getStyle('grid-template-columns'));
+        var colGaps = parseMulti(getStyle('grid-column-gap'));
+        var rows = parseMulti(getStyle('grid-template-rows'));
+        var rowGaps = parseMulti(getStyle('grid-row-gap'));
 
-      var pos = 0;
-      ctx.fillStyle = 'rgba(0,255,255,.3)';
-      for (var i = 0; i < cols.length - 1; i++) {
-        pos += parseFloat(cols[i], 10);
-        var gap = parseFloat(colGaps[i % colGaps.length], 10);
-        vert(pos + left);
-        vert(pos + gap + left);
-        pos += gap;
-      }
+        var pos = 0;
+        for (var i = 0; i <= cols.length; i++) {
+          var gap = parseFloat(colGaps[i % colGaps.length], 10);
+          vert(pos + left);
+          pos += parseFloat(cols[i], 10);
+          vert(pos + left);
+          pos += gap;
+        }
 
-      var pos = 0;
-      ctx.fillStyle = 'rgba(0,255,255,.3)';
-      for (var i = 0; i < rows.length - 1; i++) {
-        pos += parseFloat(rows[i], 10);
-        var gap = parseFloat(rowGaps[i % rowGaps.length], 10);
-        horiz(pos + top);
-        horiz(pos + gap + top);
-        pos += gap;
-      }
+        var pos = 0;
+        for (var i = 0; i <= rows.length; i++) {
+          var gap = parseFloat(rowGaps[i % rowGaps.length], 10);
+          horiz(pos + top);
+          pos += parseFloat(rows[i], 10);
+          horiz(pos + top);
+          pos += gap;
+        }
 
-    });
+        ctx.setLineDash([0]);
+        ctx.strokeStyle = 'hsla(' + ((num * 219) % 360) + ', 100%, 55%, .9)';
+        ctx.fillStyle = 'hsla(' + ((num * 219) % 360) + ', 100%, 70%, 1)';
+        var outerQuad = el.getBoxQuads({
+          box: "border"
+        })[0];
 
-    ctx.setLineDash([0]);
+        text(selector, outerQuad.p1.x, outerQuad.p1.y)
 
-    els.forEach(function (el, i) {
-      ctx.strokeStyle = 'hsl(' + ((i * 219) % 360) + ', 100%, 50%)';
+        horiz(outerQuad.p1.y);
+        vert(outerQuad.p1.x);
+        horiz(outerQuad.p3.y);
+        vert(outerQuad.p3.x);
 
-      var top = getTop(el);
-      var left = getLeft(el);
-
-      horiz(top);
-      vert(left);
-      horiz(top + el.offsetHeight);
-      vert(left + el.offsetWidth);
+        num++;
+      });
     });
 
   }
@@ -211,6 +210,8 @@
   self.port.on('detach', function () {
     overlayEl.parentNode.removeChild(overlayEl);
   });
+
+  self.port.on('redraw', redraw);
 
   window.addEventListener('resize', redraw);
   window.addEventListener('scroll', redraw);

@@ -2,3 +2,5 @@ node_modules
 .DS_Store
 testprofile
 *.xpi
+.git
+prefs.json
