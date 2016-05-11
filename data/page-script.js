@@ -53,8 +53,6 @@
   var dpr = window.devicePixelRatio;
 
   var overlayEl = document.createElement('canvas');
-  overlayEl.width = document.documentElement.offsetWidth * dpr;
-  overlayEl.height = document.documentElement.offsetHeight * dpr;
   var style = {
     pointerEvents: 'none',
     position: 'absolute',
@@ -78,8 +76,8 @@
   }
 
   function measureAndDraw() {
-    overlayEl.width = window.innerWidth * dpr;
-    overlayEl.height = window.innerHeight * dpr;
+    overlayEl.width = overlayEl.offsetWidth * dpr;
+    overlayEl.height = overlayEl.offsetHeight * dpr;
 
     var viewTop = document.documentElement.scrollTop;
     var viewLeft = document.documentElement.scrollLeft;
@@ -87,16 +85,16 @@
     overlayEl.style.top = viewTop + 'px';
     overlayEl.style.left = viewLeft + 'px';
 
-    ctx.clearRect(0,0,overlayEl.width * dpr, overlayEl.height * dpr);
+    ctx.clearRect(0, 0, overlayEl.width * dpr, overlayEl.height * dpr);
     ctx.lineWidth = dpr;
 
     function vert(x) {
-      ctx.lineDashOffset = (viewTop * dpr) % 20;
+      ctx.lineDashOffset = (viewTop * dpr) % 17;
       line(x, 0, x, overlayEl.height);
     }
 
     function horiz(y) {
-      ctx.lineDashOffset = (viewLeft * dpr) % 20;
+      ctx.lineDashOffset = (viewLeft * dpr) % 17;
       line(0, y, overlayEl.width, y);
     }
 
