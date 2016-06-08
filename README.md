@@ -13,4 +13,6 @@ This tool works only in Firefox. If you download and use [Firefox Nightly](https
 4. Use it by clicking the new icon in the upper right corner of the browser. 
 5. Enjoy! And [file issues](https://github.com/potch/gridviz/issues) with new ideas, feature requests, and bug reports. We need your help to make this better.
 
-Need more help? Watch [this silent movie](howtoinstall.gif).
+Need more help? Watch this silent movie:
+
+![a gif showing how to install this tool](howtoinstall.gif).
