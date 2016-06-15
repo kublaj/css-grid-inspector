@@ -161,9 +161,9 @@
         var pos = 0;
         for (var i = 0; i <= cols.length; i++) {
           var gap = parseFloat(colGaps[i % colGaps.length], 10);
-          vert(pos + left);
+          vert(pos + left + gap);
           pos += parseFloat(cols[i], 10);
-          vert(pos + left);
+          vert(pos + left + gap);
           pos += gap;
         }
 
