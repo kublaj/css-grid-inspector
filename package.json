@@ -6,8 +6,9 @@
   "main": "index.js",
   "scripts": {
     "start": "npm-run-all --parallel browser watch",
-    "browser": "jpm run --no-copy -b nightly --prefs prefs.json --profile ./testprofile ",
+    "browser": "jpm run -b nightly --profile ./testprofile",
     "watch": "onchange index.js data/*.js -- npm run post",
+    "init": "mkdir testprofile",
     "post": "jpm post --post-url http://localhost:8888/ && echo 'done update'"
   },
   "author": "Potch <potch@mozilla.com>",
